@@ -1,8 +1,14 @@
+[![CircleCI](https://circleci.com/gh/devatherock/starpg.svg?style=svg)](https://circleci.com/gh/devatherock/starpg)
+[![Version](https://img.shields.io/docker/v/devatherock/starpg?sort=semver)](https://hub.docker.com/r/devatherock/starpg/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/devatherock/starpg.svg)](https://hub.docker.com/r/devatherock/starpg/)
+[![Docker Image Size](https://img.shields.io/docker/image-size/devatherock/starpg.svg?sort=date)](https://hub.docker.com/r/devatherock/starpg/)
 # Starlark Playground
 
-Starlark Playground is a web-based starlark editor. It uses the golang implementation of starlark running on a server to present a  [monaco](https://github.com/Microsoft/monaco-editor) editor set to `python` syntax.
+Starlark Playground is a web-based starlark editor. It uses the golang implementation of starlark running on a server to 
+present a  [monaco](https://github.com/Microsoft/monaco-editor) editor set to `python` syntax. The playground has been
+packaged as a docker image and deployed to [heroku](https://starpg.herokuapp.com)
 
-### Getting Started
+### Local setup
 
 You'll need a recent version of [yarn](https://yarnpkg.com) and [go](https://golang.org). With those installed, run:
 
