@@ -1,3 +1,7 @@
 node_modules
 editor/dist/*.js
 coverage.txt
+.project
+.settings
+release/
+*.iml

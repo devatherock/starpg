@@ -1,0 +1,172 @@
+orbs:
+  heroku: circleci/heroku@1.0.1
+  
+work_directory: &work_directory
+  working_directory: ~/starpg
+
+resource_class: &resource_class
+  resource_class: small
+  
+release_filter: &release_filter
+  filters:
+    branches:
+      only: non-existent-branch
+    tags:
+      only: /^v[0-9\.]+$/
+
+executors:
+  docker-executor:
+    docker:
+      - image: circleci/golang:1.12
+        auth:
+          username: $DOCKER_USERNAME
+          password: $DOCKER_PASSWORD
+    <<: *resource_class
+    <<: *work_directory
+
+version: 2.1
+jobs:
+  test:
+    executor: docker-executor
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-pkg-cache-{{ checksum "go.mod" }}
+            - v1-pkg-cache
+      - run: make editor-install-deps editor-build install-deps build
+
+  build:
+    executor: docker-executor
+    environment:
+      CGO_ENABLED: 0
+      GOOS: linux
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-pkg-cache-{{ checksum "go.mod" }}
+            - v1-pkg-cache
+      - run: make editor-install-deps editor-build install-deps build
+      - save_cache:
+          paths:
+            - "/go/pkg"
+          key: v1-pkg-cache-{{ checksum "go.mod" }}
+      - persist_to_workspace:
+          root: ~/starpg
+          paths:
+            - release/starpg
+            - editor
+
+  publish:
+    executor: docker-executor
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: ~/starpg
+      - run: |
+          TAG=${CIRCLE_SHA1:0:8}
+          docker build -t devatherock/starpg:$TAG .
+          docker tag devatherock/starpg:$TAG devatherock/starpg:latest
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          docker push devatherock/starpg:$TAG
+          docker push devatherock/starpg:latest
+
+  deploy:
+    executor: heroku/default
+    <<: *resource_class
+    <<: *work_directory
+    steps:
+      - checkout
+      - heroku/install
+      - setup_remote_docker
+      - attach_workspace:
+          at: ~/starpg
+      - run:
+          name: Build and push the docker image to registry.heroku.com
+          command: |
+            docker build -t registry.heroku.com/starpg/web .
+            heroku container:login
+            docker push registry.heroku.com/starpg/web
+            heroku container:release -a starpg web
+          
+  release:
+    executor: docker-executor
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: ~/starpg
+      - run: |
+          TAG=${CIRCLE_TAG#v}
+          DEV_TAG=${CIRCLE_SHA1:0:8}
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          docker pull devatherock/starpg:$DEV_TAG
+          docker tag devatherock/starpg:$DEV_TAG devatherock/starpg:$TAG
+          docker push devatherock/starpg:$TAG
+            
+  notify:
+    docker:
+      - image: devatherock/simple-slack:0.7.0
+        auth:
+          username: $DOCKER_USERNAME
+          password: $DOCKER_PASSWORD
+    <<: *resource_class
+    environment:
+      TEXT: "Success: {{.CircleBuildUrl}} by {{.CircleUsername}}"
+      CHANNEL: general
+      TITLE: "Build completed"
+    steps:
+      - run: /bin/simpleslack -c "#33ad7f"            
+
+workflows:
+  version: 2.1
+  build_deploy:
+    jobs:
+      - build:
+          context:
+            - docker-credentials
+          filters:
+            branches:
+              only: master
+      - publish:
+          context:
+            - docker-credentials
+          requires:
+            - build
+      - deploy:
+          context:
+            - docker-credentials
+            - heroku-credentials
+          requires:
+            - publish
+      - notify:
+          context:
+            - docker-credentials
+            - slack-webhook
+          requires:
+            - deploy
+            
+  release:
+    jobs:
+      - release:
+          context:
+            - docker-credentials
+          <<: *release_filter
+      - notify:
+          context:
+            - docker-credentials
+            - slack-webhook
+          <<: *release_filter
+          requires:
+            - release
+            
+  pr_check:
+    jobs:
+      - test:
+          context:
+            - docker-credentials
+          filters:
+            branches:
+              ignore: master
