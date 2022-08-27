@@ -1,6 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+### Changed
+- Fixed release pipeline
+
+## [0.2.0] - 2022-08-27
 ### Added
 - Docker image
 - CI pipeline to build and deploy

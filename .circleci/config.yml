@@ -139,12 +139,14 @@ workflows:
       - deploy:
           context:
             - docker-credentials
+          <<: *release_filter
           requires:
             - release
       - notify:
           context:
             - docker-credentials
             - slack-webhook
+          <<: *release_filter
           requires:
             - deploy
             
