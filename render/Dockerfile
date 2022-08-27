@@ -1,1 +1,1 @@
-FROM devatherock/starpg:latest
+FROM devatherock/starpg:0.2.0
