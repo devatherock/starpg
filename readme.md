@@ -6,7 +6,7 @@
 
 Starlark Playground is a web-based starlark editor. It uses the golang implementation of starlark running on a server to 
 present a  [monaco](https://github.com/Microsoft/monaco-editor) editor set to `python` syntax. The playground has been
-packaged as a docker image and deployed to [heroku](https://starpg.herokuapp.com)
+packaged as a docker image and deployed to [render](https://starpg.onrender.com)
 
 ### Local setup
 
