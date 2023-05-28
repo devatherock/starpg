@@ -1,5 +1,5 @@
 .PHONY : editor-install-deps editor-build install-deps start
-GOPACKAGES = go.starlark.net/starlark github.com/sirupsen/logrus github.com/qri-io/starlib
+GOPACKAGES = go.starlark.net/starlark@v0.0.0-20210602144842-1cdb82c9e17a github.com/sirupsen/logrus@v1.8.1 github.com/qri-io/starlib@v0.5.0
 
 default: editor-install-deps editor-build install-deps run
 
