@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Changed
 - Fixed release pipeline
+- Updated dockerhub readme in CI pipeline
 
 ### Removed
 - Unused `PORT` environment variable from render
