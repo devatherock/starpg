@@ -70,6 +70,20 @@ jobs:
           docker push devatherock/starpg:$TAG
           docker push devatherock/starpg:latest
           
+  dockerhub_readme:
+    machine:
+      image: ubuntu-2204:2023.04.2
+    steps:
+      - checkout
+      - run: |
+          docker run -v $PWD:/workspace \
+              -e DOCKERHUB_USERNAME \
+              -e DOCKERHUB_PASSWORD \
+              -e DOCKERHUB_REPOSITORY='devatherock/starpg' \
+              -e SHORT_DESCRIPTION='A web-based starlark playground' \
+              -e README_FILEPATH='/workspace/readme.md' \
+              peterevans/dockerhub-description:3.4.1
+          
   release:
     executor: docker-executor
     steps:
@@ -123,12 +137,18 @@ workflows:
             - docker-credentials
           requires:
             - build
+      - dockerhub_readme:
+          context:
+            - docker-credentials
+            - dockerhub-readme-credentials
+          requires:
+            - publish
       - notify:
           context:
             - docker-credentials
             - slack-webhook
           requires:
-            - publish
+            - dockerhub_readme
             
   release:
     jobs:
