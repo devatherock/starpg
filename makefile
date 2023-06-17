@@ -3,6 +3,7 @@ GOPACKAGES = go.starlark.net/starlark github.com/sirupsen/logrus github.com/qri-
 docker_tag = latest
 skip_pull = false
 all = false
+go_version = 1.17
 
 default: editor-install-deps editor-build install-deps run
 
@@ -46,7 +47,9 @@ clean:
 	rm -rf release
 
 docker-build:
-	docker build -t devatherock/starpg:$(docker_tag) \
+	docker build \
+		--build-arg GO_VERSION=$(go_version) \
+		-t devatherock/starpg:$(docker_tag) \
 	    -f build/Dockerfile .
 	
 integration-test:

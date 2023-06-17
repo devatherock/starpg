@@ -21,10 +21,15 @@ pr_filter: &pr_filter
     branches:
       ignore: master
 
+parameters:
+  go_version:
+    type: string
+    default: "1.17"
+
 executors:
   docker-executor:
     docker:
-      - image: cimg/go:1.17.13-node
+      - image: cimg/go:<< pipeline.parameters.go_version >>-node
         auth:
           username: $DOCKER_USERNAME
           password: $DOCKER_PASSWORD
@@ -45,8 +50,8 @@ jobs:
     steps:
       - checkout
       - run: |
-          make editor-install-deps editor-build install-deps build-all
-          make docker-build integration-test skip_pull=true
+          make editor-install-deps editor-build install-deps
+          make docker-build integration-test skip_pull=true go_version=<< pipeline.parameters.go_version >>
 
   build:
     executor: docker-executor
@@ -56,7 +61,7 @@ jobs:
           keys:
             - v1-pkg-cache-{{ checksum "go.mod" }}
             - v1-pkg-cache
-      - run: make editor-install-deps editor-build install-deps build-all
+      - run: make editor-install-deps editor-build install-deps
       - save_cache:
           paths:
             - "/home/circleci/go/pkg"
@@ -64,7 +69,6 @@ jobs:
       - persist_to_workspace:
           root: ~/starpg
           paths:
-            - release/starpg
             - editor
 
   publish:
@@ -76,7 +80,11 @@ jobs:
           at: ~/starpg
       - run: |
           TAG=${CIRCLE_SHA1:0:8}
-          docker build -t devatherock/starpg:$TAG -f build/Dockerfile .
+          docker build \
+              --build-arg GO_VERSION=<< pipeline.parameters.go_version >> \
+              -t devatherock/starpg:$TAG \
+              -t devatherock/starpg:latest \
+              -f build/Dockerfile .
           docker tag devatherock/starpg:$TAG devatherock/starpg:latest
           echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
           docker push devatherock/starpg:$TAG
