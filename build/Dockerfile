@@ -1,4 +1,4 @@
-FROM alpine
+FROM alpine:3.16.6
 
 LABEL maintainer="devatherock@gmail.com"
 

@@ -1,0 +1,7 @@
+services:
+
+  starpg:
+    image: devatherock/starpg:${DOCKER_TAG:-latest}
+    network_mode: "host"
+    environment:
+      - PORT=8082
