@@ -40,6 +40,11 @@ executors:
       image: ubuntu-2204:2023.04.2
     resource_class: medium
     <<: *work_directory
+  arm-executor:
+    machine:
+      image: ubuntu-2004:2022.04.1
+    resource_class: arm.medium
+    <<: *work_directory
 
 version: 2.1
 jobs:
@@ -80,15 +85,16 @@ jobs:
           at: ~/starpg
       - run: |
           TAG=${CIRCLE_SHA1:0:8}
-          docker build \
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+          docker buildx create --name rockbuilder \
+            --driver docker-container --use --bootstrap
+          docker buildx build \
+              --platform linux/amd64,linux/arm64 \
+              --push \
               --build-arg GO_VERSION=<< pipeline.parameters.go_version >> \
               -t devatherock/starpg:$TAG \
               -t devatherock/starpg:latest \
               -f build/Dockerfile .
-          docker tag devatherock/starpg:$TAG devatherock/starpg:latest
-          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-          docker push devatherock/starpg:$TAG
-          docker push devatherock/starpg:latest
 
   dockerhub_readme:
     executor: machine-executor
@@ -124,9 +130,10 @@ jobs:
           TAG=${CIRCLE_TAG#v}
           DEV_TAG=${CIRCLE_SHA1:0:8}
           echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-          docker pull devatherock/starpg:$DEV_TAG
-          docker tag devatherock/starpg:$DEV_TAG devatherock/starpg:$TAG
-          docker push devatherock/starpg:$TAG
+          docker buildx create --name rockbuilder \
+            --driver docker-container --use --bootstrap
+          docker buildx imagetools create \
+            -t devatherock/starpg:$TAG devatherock/starpg:$DEV_TAG
 
   deploy:
     executor: docker-executor
@@ -176,6 +183,13 @@ workflows:
             - docker-credentials
           runner: machine-executor
           requires:
+            - publish
+      - integration_test:
+          name: integration_test_arm
+          context:
+            - docker-credentials
+          runner: arm-executor
+          requires:
             - dockerhub_readme
       - notify:
           context:
@@ -183,6 +197,7 @@ workflows:
             - slack-webhook
           requires:
             - integration_test_amd
+            - integration_test_arm
 
   release:
     jobs:

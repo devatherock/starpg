@@ -7,6 +7,7 @@
 ### Changed
 - Fixed release pipeline
 - Updated dockerhub readme in CI pipeline
+- [#5](https://github.com/devatherock/starpg/issues/5): Built a multi-arch docker image
 
 ### Removed
 - Unused `PORT` environment variable from render
