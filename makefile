@@ -34,7 +34,7 @@ endif
 	go vet
 	
 build-all:
-	go build -o release/starpg
+	CGO_ENABLED=0 GOOS=linux go build -o release/starpg
 	
 run:
 	@echo "\nbuild and run\n"
@@ -43,6 +43,7 @@ run:
 	
 clean:
 	go clean -testcache
+	rm -rf release
 
 docker-build:
 	docker build -t devatherock/starpg:$(docker_tag) \
