@@ -64,8 +64,8 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 // ExecHandler assumes the request body is a starlark script to be executed
 // currently no loader is provided, so all code must be defined inline
 // errors are reported via HTTP response codes:
-//   * 400: script errors
-//   * 500: internal errors
+//   - 400: script errors
+//   - 500: internal errors
 func ExecHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
