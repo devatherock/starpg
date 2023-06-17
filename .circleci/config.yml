@@ -24,7 +24,7 @@ pr_filter: &pr_filter
 executors:
   docker-executor:
     docker:
-      - image: cimg/go:1.17.13-node
+      - image: cimg/go:1.17.6-node
         auth:
           username: $DOCKER_USERNAME
           password: $DOCKER_PASSWORD
