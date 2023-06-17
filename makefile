@@ -33,7 +33,7 @@ endif
 	gofmt -l -w -s .
 	go vet
 	
-build:
+build-all:
 	go build -o release/starpg
 	
 run:

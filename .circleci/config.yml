@@ -49,7 +49,7 @@ jobs:
             - v1-pkg-test-cache-{{ checksum "go.mod" }}
             - v1-pkg-test-cache
       - run: |
-          make editor-install-deps editor-build install-deps build
+          make editor-install-deps editor-build install-deps build-all
           make docker-build integration-test skip_pull=true
       - save_cache:
           paths:
@@ -67,7 +67,7 @@ jobs:
           keys:
             - v1-pkg-cache-{{ checksum "go.mod" }}
             - v1-pkg-cache
-      - run: make editor-install-deps editor-build install-deps build
+      - run: make editor-install-deps editor-build install-deps build-all
       - save_cache:
           paths:
             - "/home/circleci/go/pkg"
