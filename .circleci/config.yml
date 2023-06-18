@@ -49,7 +49,7 @@ executors:
 version: 2.1
 jobs:
   test:
-    executor: machine-executor
+    executor: arm-executor
     environment:
       NODE_OPTIONS: "--openssl-legacy-provider"
     steps:
