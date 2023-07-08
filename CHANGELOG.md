@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+
+## [1.0.0] - 2023-06-17
 ### Added
 - [#4](https://github.com/devatherock/starpg/issues/4): Functional tests
 
