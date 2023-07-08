@@ -97,17 +97,21 @@ jobs:
               -f build/Dockerfile .
 
   dockerhub_readme:
-    executor: machine-executor
+    docker:
+      - image: peterevans/dockerhub-description:3.4.2
+        <<: *docker_auth
+    <<: *resource_class
+    <<: *work_directory
+    environment:
+      DOCKERHUB_REPOSITORY: 'devatherock/starpg'
+      SHORT_DESCRIPTION: 'A web-based starlark playground'
+      README_FILEPATH: readme.md
     steps:
       - checkout
+      - attach_workspace:
+          at: ~/starpg
       - run: |
-          docker run -v $PWD:/workspace \
-              -e DOCKERHUB_USERNAME \
-              -e DOCKERHUB_PASSWORD \
-              -e DOCKERHUB_REPOSITORY='devatherock/starpg' \
-              -e SHORT_DESCRIPTION='A web-based starlark playground' \
-              -e README_FILEPATH='/workspace/readme.md' \
-              peterevans/dockerhub-description:3.4.1
+          sh /entrypoint.sh
 
   integration_test:
     parameters:
@@ -146,7 +150,7 @@ jobs:
 
   notify:
     docker:
-      - image: devatherock/simple-slack:0.7.0
+      - image: devatherock/simple-slack:1.0.0
         <<: *docker_auth
     <<: *resource_class
     environment:
